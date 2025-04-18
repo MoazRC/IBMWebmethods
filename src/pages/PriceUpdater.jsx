@@ -48,7 +48,7 @@ function PriceUpdater() {
         effective_from: formData.effective_from.toISOString()
       };
 
-      const response = await fetch('http://env568262.apigw-aw-us.webmethods.io/gateway/notificationApi/1.0.0', {
+      const response = await fetch('https://env568262.apigw-aw-us.webmethods.io/gateway/notificationApi/1.0.0', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -85,7 +85,7 @@ function PriceUpdater() {
   // Function to make the API request when the component mounts
   const makeInitialRequest = async () => {
     try {
-      const response = await fetch('http://env568262.apigw-aw-us.webmethods.io/gateway/notificationApi/1.0.0', {
+      const response = await fetch('https://env568262.apigw-aw-us.webmethods.io/gateway/notificationApi/1.0.0', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
