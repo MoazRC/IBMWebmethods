@@ -38,7 +38,11 @@ function PriceUpdater() {
         effective_from: formData.effective_from.toISOString()
       };
 
+<<<<<<< HEAD
       const response = await fetch('https://env568262.apigw-aw-us.webmethods.io/gateway/notificationApi/1.0.0', {
+=======
+      const response = await fetch('http://env568262.apigw-aw-us.webmethods.io/gateway/notificationApi/1.0.0', {
+>>>>>>> ab143d5 (first commit)
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

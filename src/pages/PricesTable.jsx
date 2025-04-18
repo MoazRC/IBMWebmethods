@@ -32,7 +32,11 @@ function PricesTable() {
   // Fetch prices from the API and remap price_per_kwh to price_per_km.
   const fetchPrices = () => {
     setLoading(true);
+<<<<<<< HEAD
     fetch('https://env568262.apigw-aw-us.webmethods.io/gateway/PricesAPI/1.0.1/prices', {
+=======
+    fetch('http://env568262.apigw-aw-us.webmethods.io/gateway/PricesAPI/1.0.1/prices', {
+>>>>>>> ab143d5 (first commit)
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     })
