@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { ArrowLeft, Zap, AlertCircle } from 'lucide-react';
@@ -8,18 +8,27 @@ import './PriceUpdater.css'; // Make sure this CSS file exists
 
 function PriceUpdater() {
   const navigate = useNavigate();
-  // Define allowed rate types for all regions as only Standard and Overnight
+
+  // Define city to region mapping for API payload
+  const cityToRegionMap = {
+    'Riyadh': 'North',
+    'Jeddah': 'South',
+    'Dammam': 'East',
+    'Madina': 'West'
+  };
+
+  // Define allowed rate types for all cities as only Standard and Overnight
   const rateOptions = {
-    North: ['Standard', 'Overnight'],
-    South: ['Standard', 'Overnight'],
-    East: ['Standard', 'Overnight'],
-    West: ['Standard', 'Overnight']
+    'Riyadh': ['Standard', 'Overnight'],
+    'Jeddah': ['Standard', 'Overnight'],
+    'Dammam': ['Standard', 'Overnight'],
+    'Madina': ['Standard', 'Overnight']
   };
 
   const [formData, setFormData] = useState({
-    region: 'North',
-    rate_type: 'Standard', // default for North
-    price_per_kWh: '', // Updated to match the API payload key
+    city: 'Riyadh', // Frontend display value
+    rate_type: 'Standard', // default for Riyadh
+    price_per_kWh: '', // Keeping the key name as is for API compatibility
     effective_from: new Date()
   });
 
@@ -31,18 +40,15 @@ function PriceUpdater() {
     e.preventDefault();
     const toastId = toast.loading("Sending Update Request...");
     try {
-      // Update payload with correct key: price_per_kWh
+      // Map city to region for the API payload
       const payload = {
-        ...formData,
+        region: cityToRegionMap[formData.city], // Map city to region
+        rate_type: formData.rate_type,
         price_per_kWh: parseFloat(formData.price_per_kWh),
         effective_from: formData.effective_from.toISOString()
       };
 
-<<<<<<< HEAD
-      const response = await fetch('https://env568262.apigw-aw-us.webmethods.io/gateway/notificationApi/1.0.0', {
-=======
       const response = await fetch('http://env568262.apigw-aw-us.webmethods.io/gateway/notificationApi/1.0.0', {
->>>>>>> ab143d5 (first commit)
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -61,11 +67,11 @@ function PriceUpdater() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // When region changes, update the rate_type to the first available option for that region
-    if (name === 'region') {
+    // When city changes, update the rate_type to the first available option for that city
+    if (name === 'city') {
       setFormData({
         ...formData,
-        region: value,
+        city: value,
         rate_type: rateOptions[value][0]
       });
     } else {
@@ -75,6 +81,35 @@ function PriceUpdater() {
       });
     }
   };
+
+  // Function to make the API request when the component mounts
+  const makeInitialRequest = async () => {
+    try {
+      const response = await fetch('http://env568262.apigw-aw-us.webmethods.io/gateway/notificationApi/1.0.0', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify([
+          {
+            region: "North",
+            price_per_kWh: 0.44,
+            effective_from: "2025-04-08T08:00:00Z"
+          }
+        ])
+      });
+
+      const data = await response.json();
+      console.log('Intentional Error Response:', data);
+    } catch (error) {
+      console.error('Intentional Error:', error);
+    }
+  };
+
+  // Use useEffect to make the API request when the component mounts
+  useEffect(() => {
+    makeInitialRequest();
+  }, []);
 
   // Custom styles for the date picker
   const customDatePickerStyles = {
@@ -86,7 +121,7 @@ function PriceUpdater() {
     <div className="min-h-screen bg-[#0F172A] text-white relative overflow-hidden">
       {/* Grid Pattern Background */}
       <div className="absolute inset-0 grid-pattern opacity-30"></div>
-      
+
       {/* Gradient Orbs */}
       <div className="absolute top-40 left-20 w-72 h-72 bg-blue-500 rounded-full filter blur-[128px] opacity-20 animate-float"></div>
       <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500 rounded-full filter blur-[128px] opacity-20 animate-float" style={{ animationDelay: '-3s' }}></div>
@@ -106,29 +141,29 @@ function PriceUpdater() {
                 </div>
                 <h2 className="text-2xl font-bold">Update Shipping Prices</h2>
               </div>
-              
+
               <p className="text-gray-400">
                 Set new energy rates that will be automatically applied across the system.
               </p>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              {/* Region Select */}
+              {/* City Select (displays cities on frontend) */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Region
+                  City
                 </label>
                 <select
-                  name="region"
-                  value={formData.region}
+                  name="city"
+                  value={formData.city}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-white/10 rounded-lg 
-                             focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                  className="w-full px-4 py-3 border border-white/10 rounded-lg
+                             focus:ring-2 focus:ring-blue-500 focus:border-transparent
                              bg-gray-900 text-white appearance-none"
                 >
-                  {Object.keys(rateOptions).map(region => (
-                    <option key={region} className="bg-gray-900 text-white" value={region}>
-                      {region}
+                  {Object.keys(rateOptions).map(city => (
+                    <option key={city} className="bg-gray-900 text-white" value={city}>
+                      {city}
                     </option>
                   ))}
                 </select>
@@ -143,11 +178,11 @@ function PriceUpdater() {
                   name="rate_type"
                   value={formData.rate_type}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-white/10 rounded-lg 
-                             focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                  className="w-full px-4 py-3 border border-white/10 rounded-lg
+                             focus:ring-2 focus:ring-blue-500 focus:border-transparent
                              bg-gray-900 text-white appearance-none"
                 >
-                  {rateOptions[formData.region].map(rate => (
+                  {rateOptions[formData.city].map(rate => (
                     <option key={rate} className="bg-gray-900 text-white" value={rate}>
                       {rate}
                     </option>
@@ -161,15 +196,15 @@ function PriceUpdater() {
                   Price per km
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">SAR</span>
                   <input
                     type="number"
                     name="price_per_kWh"
                     step="0.01"
                     value={formData.price_per_kWh}
                     onChange={handleChange}
-                    className="w-full pl-8 pr-4 py-3 bg-gray-900 border border-white/10 
-                               rounded-lg focus:ring-2 focus:ring-blue-500 
+                    className="w-full pl-12 pr-4 py-3 bg-gray-900 border border-white/10
+                               rounded-lg focus:ring-2 focus:ring-blue-500
                                focus:border-transparent text-white"
                     placeholder="0.00"
                   />
@@ -231,7 +266,7 @@ function PriceUpdater() {
                             className="bg-gray-800 text-white border border-gray-700 rounded"
                           >
                             {[
-                              "January", "February", "March", "April", "May", "June", 
+                              "January", "February", "March", "April", "May", "June",
                               "July", "August", "September", "October", "November", "December"
                             ].map((month, i) => (
                               <option key={month} value={i}>

@@ -4,6 +4,14 @@ import { ArrowLeft, Search, Plus, Download, BarChart2, RefreshCw } from 'lucide-
 import { toast } from 'react-toastify';
 import ClipLoader from 'react-spinners/ClipLoader';
 
+// City mapping for the frontend display
+const regionToCityMap = {
+  'North': 'Riyadh',
+  'South': 'Jeddah',
+  'East': 'Dammam',
+  'West': 'Madina'
+};
+
 // Mapping for unique product names, base prices, and distance per region and rate type.
 const productMapping = {
   South: {
@@ -32,11 +40,7 @@ function PricesTable() {
   // Fetch prices from the API and remap price_per_kwh to price_per_km.
   const fetchPrices = () => {
     setLoading(true);
-<<<<<<< HEAD
-    fetch('https://env568262.apigw-aw-us.webmethods.io/gateway/PricesAPI/1.0.1/prices', {
-=======
     fetch('http://env568262.apigw-aw-us.webmethods.io/gateway/PricesAPI/1.0.1/prices', {
->>>>>>> ab143d5 (first commit)
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     })
@@ -51,7 +55,7 @@ function PricesTable() {
         // Remap each result, renaming price_per_kwh to price_per_km, and adding default status.
         const fetchedPrices = data.results.map((price, index) => ({
           id: index + 1,
-          region: price.region,
+          region: price.region, // Keep region as is for backend compatibility
           rate_type: price.rate_type,
           price_per_km: price.price_per_kwh,
           effective_from: price.effective_from,
@@ -72,12 +76,15 @@ function PricesTable() {
     fetchPrices();
   }, []);
 
-  // Filter prices by region, rate type, or product (derived from the mapping)
+  // Filter prices by region/city, rate type, or product (derived from the mapping)
   const filteredPrices = prices.filter(price => {
     const regionMapping = productMapping[price.region];
     const product = regionMapping ? regionMapping[price.rate_type] : null;
     const productName = product ? product.productName : '';
+    const cityName = regionToCityMap[price.region] || price.region;
+    
     return (
+      cityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       price.region.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (price.rate_type && price.rate_type.toLowerCase().includes(searchTerm.toLowerCase())) ||
       productName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -109,13 +116,13 @@ function PricesTable() {
 
     // CSV Headers.
     const headers = [
-      'Region',
+      'City',
       'Rate Type',
       'Product',
-      'Base Price ($)',
-      'Price per km ($)',
+      'Base Price (SAR)',
+      'Price per km (SAR)',
       'Distance (km)',
-      'Total Price ($)',
+      'Total Price (SAR)',
       'Effective From'
     ];
     const rows = prices.map(price => {
@@ -123,7 +130,7 @@ function PricesTable() {
       const product = regionMapping ? regionMapping[price.rate_type] : { productName: 'N/A', basePrice: 0, distance: 0 };
       const totalPrice = product.basePrice + (price.price_per_km * product.distance);
       return [
-        price.region,
+        regionToCityMap[price.region] || price.region,
         price.rate_type,
         product.productName,
         product.basePrice.toFixed(2),
@@ -174,7 +181,7 @@ function PricesTable() {
                 <h3 className="text-lg font-medium">Average Total Price</h3>
                 <BarChart2 className="w-5 h-5 text-blue-400" />
               </div>
-              <p className="text-3xl font-bold">${averageTotalPrice}</p>
+              <p className="text-3xl font-bold">SAR {averageTotalPrice}</p>
               <p className="text-sm text-gray-400 mt-2">Based on {prices.length} entries</p>
             </div>
             
@@ -185,7 +192,7 @@ function PricesTable() {
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               </div>
               <p className="text-3xl font-bold">{activeRatesCount}</p>
-              <p className="text-sm text-gray-400 mt-2">Across all regions</p>
+              <p className="text-sm text-gray-400 mt-2">Across all cities</p>
             </div>
             
             {/* Latest Entry Card */}
@@ -196,10 +203,11 @@ function PricesTable() {
               {latestEntry ? (() => {
                 const regionMapping = productMapping[latestEntry.region];
                 const product = regionMapping ? regionMapping[latestEntry.rate_type] : { productName: 'N/A' };
+                const cityName = regionToCityMap[latestEntry.region] || latestEntry.region;
                 return (
                   <>
                     <p className="text-3xl font-bold">
-                      {latestEntry.region} | {latestEntry.rate_type} | {product.productName}
+                      {cityName} | {latestEntry.rate_type} | {product.productName}
                     </p>
                     <p className="text-sm text-gray-400 mt-2">
                       {new Date(latestEntry.effective_from).toLocaleString()}
@@ -220,7 +228,7 @@ function PricesTable() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
                     type="text"
-                    placeholder="Search by region, rate type, or product..."
+                    placeholder="Search by city, rate type, or product..."
                     className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -263,13 +271,13 @@ function PricesTable() {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-white/5">
-                      <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Region</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">City</th>
                       <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Rate Type</th>
                       <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Product</th>
-                      <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Base Price ($)</th>
-                      <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Price per km ($)</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Base Price (SAR)</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Price per km (SAR)</th>
                       <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Distance (km)</th>
-                      <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Total Price ($)</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Total Price (SAR)</th>
                       <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Effective From</th>
                     </tr>
                   </thead>
@@ -278,15 +286,17 @@ function PricesTable() {
                       const regionMapping = productMapping[price.region];
                       const product = regionMapping ? regionMapping[price.rate_type] : { productName: 'N/A', basePrice: 0, distance: 0 };
                       const totalPrice = product.basePrice + (price.price_per_km * product.distance);
+                      const cityName = regionToCityMap[price.region] || price.region;
+                      
                       return (
                         <tr key={price.id} className="hover:bg-white/5 transition-colors">
-                          <td className="px-6 py-4 text-sm">{price.region}</td>
+                          <td className="px-6 py-4 text-sm">{cityName}</td>
                           <td className="px-6 py-4 text-sm">{price.rate_type}</td>
                           <td className="px-6 py-4 text-sm">{product.productName}</td>
-                          <td className="px-6 py-4 text-sm">${product.basePrice.toFixed(2)}</td>
-                          <td className="px-6 py-4 text-sm">${price.price_per_km.toFixed(2)}</td>
+                          <td className="px-6 py-4 text-sm">SAR {product.basePrice.toFixed(2)}</td>
+                          <td className="px-6 py-4 text-sm">SAR {price.price_per_km.toFixed(2)}</td>
                           <td className="px-6 py-4 text-sm">{product.distance}</td>
-                          <td className="px-6 py-4 text-sm">${totalPrice.toFixed(2)}</td>
+                          <td className="px-6 py-4 text-sm">SAR {totalPrice.toFixed(2)}</td>
                           <td className="px-6 py-4 text-sm">
                             {new Date(price.effective_from).toLocaleString()}
                           </td>
