@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Zap, Shield, Settings, ChevronRight, Sparkles } from 'lucide-react';
-import RClogo from '../../RClogo.png'; // Adjust the path as needed
+import RClogo from '../../RClogo.png'; 
+import Saudiflag1 from '../../flag1.jpg'
+
 
 function LandingPage() {
   return (
@@ -20,8 +22,20 @@ function LandingPage() {
             <div className="flex items-center space-x-3">
             <div className="p-2 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg">
               <div className="flex items-center">
-              <img src={RClogo} alt="Royal Cyber Logo" className="h-12" />
+              <img
+  src={Saudiflag1}
+  alt="flag logo"
+  className="h-12 w-32"
+/>
+
             </div>
+            
+              </div>
+              <div className="p-2 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg">
+              <div className="flex items-center">
+              <img src={RClogo} alt="Royal Cyber Logo" className="h-12 w-44 "  />
+            </div>
+            
               </div>
              
             </div>
